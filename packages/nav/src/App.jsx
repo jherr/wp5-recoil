@@ -1,11 +1,12 @@
 import React from "react";
+import { RecoilRoot } from "recoil";
 
 import "antd/dist/antd.css";
 
 import Header from "./Header";
 
 export default () => (
-  <div>
+  <RecoilRoot>
     <Header />
-  </div>
+  </RecoilRoot>
 );

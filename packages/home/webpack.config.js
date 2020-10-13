@@ -2,6 +2,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const ModuleFederationPlugin = require("webpack/lib/container/ModuleFederationPlugin");
 const CopyPlugin = require("copy-webpack-plugin");
 
+const deps = require("./package.json").dependencies;
 module.exports = {
   entry: "./src/index",
   cache: false,
@@ -23,6 +24,13 @@ module.exports = {
 
   module: {
     rules: [
+      {
+        test: /\.m?js/,
+        type: "javascript/auto",
+        resolve: {
+          fullySpecified: false,
+        },
+      },
       {
         test: /\.css$/i,
         use: ["style-loader", "css-loader"],
@@ -61,16 +69,25 @@ module.exports = {
     new CopyPlugin([{ from: "fruit", to: "fruit" }]),
     new ModuleFederationPlugin({
       name: "home",
-      library: { type: "var", name: "home" },
       filename: "remoteEntry.js",
       remotes: {
-        nav: "nav",
+        nav: "nav@http://localhost:3003/remoteEntry.js",
       },
       exposes: {
-        ProductCarousel: "./src/ProductCarousel",
-        atoms: "./src/atoms",
+        "./ProductCarousel": "./src/ProductCarousel",
+        "./atoms": "./src/atoms",
       },
-      shared: ["react", "react-dom", "antd", "@ant-design/icons", "recoil"],
+      shared: {
+        ...deps,
+        react: {
+          singleton: true,
+          requiredVersion: deps.react,
+        },
+        "react-dom": {
+          singleton: true,
+          requiredVersion: deps["react-dom"],
+        },
+      },
     }),
     new HtmlWebpackPlugin({
       template: "./src/index.html",
